@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.mutableStateOf
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
@@ -11,6 +12,7 @@ import com.example.compose2.dataStore
 import com.example.compose2.model.Audio
 import com.example.compose2.model.AudioRecent
 import com.example.compose2.model.Playlist
+import com.example.compose2.model.ThemeSelection
 import com.example.compose2.repository.MuzikiRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -37,6 +39,8 @@ class MuzikiViewModel(private val repository: MuzikiRepository, private val appl
     val recentPlaylist:Flow<List<AudioRecent>> = repository.getRecentList()
 
     private val lastPosition= intPreferencesKey("lastPosition")
+
+    private val currentTheme= stringPreferencesKey("currentTheme")
 
 
     var showMiniPlayer by savedStateHandle.saveable { mutableStateOf(true) }
@@ -89,9 +93,23 @@ class MuzikiViewModel(private val repository: MuzikiRepository, private val appl
             }
         }
     }
+
+    fun setCurrentTheme(selectedTheme: String){
+        viewModelScope.launch(Dispatchers.IO) {
+            application.dataStore.edit { themepref->
+                themepref[currentTheme]=selectedTheme
+            }
+        }
+    }
     fun getLastPosition():Flow<Int>{
         return application.dataStore.data.map { pref->
             pref[lastPosition] ?: 0
+        }
+    }
+
+    fun getCurrentTheme():Flow<String>{
+        return application.dataStore.data.map { pref->
+            pref[currentTheme] ?: ThemeSelection.SYSTEM_THEME.name
         }
     }
 }

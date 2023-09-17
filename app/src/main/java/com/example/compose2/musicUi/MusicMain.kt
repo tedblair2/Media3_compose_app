@@ -10,16 +10,20 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.core.view.ViewCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.compose2.R
 import com.example.compose2.model.Audio
 import com.example.compose2.model.ScreenWidget
+import com.example.compose2.model.ThemeSelection
 import com.example.compose2.routes.NavGraphSetUp
 import com.example.compose2.routes.Screens
 import com.example.compose2.viewmodel.MuzikiViewModel
@@ -31,6 +35,7 @@ import org.koin.androidx.compose.koinViewModel
 fun MusicMain(navHostController: NavHostController,
               viewModel: MuzikiViewModel= koinViewModel(),
               playerViewModel: PlayerViewModel= koinViewModel(),
+              currentTheme:String=ThemeSelection.SYSTEM_THEME.name,
               onItemClick: (List<Audio>, Int) -> Unit,
               onPreviousClick: () -> Unit,
               onPlayPauseClick: () -> Unit,
@@ -61,6 +66,19 @@ fun MusicMain(navHostController: NavHostController,
     var checkDetailScreen by remember { mutableStateOf(ScreenWidget.MAIN) }
     var playListId by remember { mutableStateOf(0) }
     val showMiniPlayer=viewModel.showMiniPlayer
+    var showAlert by rememberSaveable { mutableStateOf(false) }
+    val themeIcon=when(currentTheme){
+        ThemeSelection.DARK_THEME.name->painterResource(id = R.drawable.ic_dark_theme)
+        ThemeSelection.LIGHT_THEME.name-> painterResource(id = R.drawable.ic_light_theme)
+        else->{
+            if (isDark) painterResource(id = R.drawable.ic_dark_theme) else painterResource(id = R.drawable.ic_light_theme)
+        }
+    }
+    val themeState=when(currentTheme){
+        ThemeSelection.DARK_THEME.name->false
+        ThemeSelection.LIGHT_THEME.name-> true
+        else->!isDark
+    }
     if (!view.isInEditMode) {
         SideEffect {
             if (isPlayerScreen){
@@ -71,8 +89,8 @@ fun MusicMain(navHostController: NavHostController,
             }else{
                 (view.context as Activity).window.statusBarColor = mainColor
                 (view.context as Activity).window.navigationBarColor=mainColor
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars =!isDark
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars=!isDark
+                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars =themeState
+                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars=themeState
             }
         }
     }
@@ -85,6 +103,10 @@ fun MusicMain(navHostController: NavHostController,
                                   IconButton(onClick = { navHostController.navigate(Screens.SearchSong.route) }) {
                                       Icon(imageVector = Icons.Default.Search,
                                           contentDescription ="search", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                  }
+                                  IconButton(onClick = { showAlert=true }) {
+                                      Icon(painter =themeIcon , contentDescription ="theme change",
+                                          tint =MaterialTheme.colorScheme.onSurfaceVariant)
                                   }
                               }, colors = TopAppBarDefaults.topAppBarColors(
                                   containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -142,5 +164,12 @@ fun MusicMain(navHostController: NavHostController,
             isRefreshing = isRefreshing,
             onRefresh = onRefresh
         )
+
+        if (showAlert){
+            ThemeSelectionDialog(dismissAlert = {showAlert=false},
+                onThemeClick = {
+                    viewModel.setCurrentTheme(it)
+                }, currentTheme = currentTheme)
+        }
     }
 }

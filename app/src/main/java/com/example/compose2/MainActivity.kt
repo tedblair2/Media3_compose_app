@@ -16,6 +16,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -39,6 +40,7 @@ import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.example.compose2.model.Audio
 import com.example.compose2.model.RepeatMode
+import com.example.compose2.model.ThemeSelection
 import com.example.compose2.musicUi.MusicMain
 import com.example.compose2.musicUi.formatTime
 import com.example.compose2.musicUi.getAlbumArt
@@ -69,7 +71,12 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Compose2Theme {
+            val currentTheme by viewModel.getCurrentTheme().collectAsState(initial = ThemeSelection.SYSTEM_THEME.name)
+            Compose2Theme(darkTheme = when(currentTheme){
+                ThemeSelection.LIGHT_THEME.name->false
+                ThemeSelection.DARK_THEME.name->true
+                else -> isSystemInDarkTheme()
+            }) {
                 val navHostController= rememberNavController()
                 val scope= rememberCoroutineScope()
                 var refresh by remember { mutableStateOf(false) }
@@ -80,6 +87,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                 ) {
                     MusicMain(
                         navHostController = navHostController,
+                        currentTheme = currentTheme,
                         onItemClick = { list, pos ->
                             kotlin.run {
                                 val player = this.controller ?: return@run
