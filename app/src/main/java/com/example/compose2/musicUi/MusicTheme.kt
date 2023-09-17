@@ -23,8 +23,10 @@ import com.example.compose2.model.ThemeSelection
 fun ThemeSelectionDialog(dismissAlert:()->Unit={},
                          currentTheme:String=ThemeSelection.SYSTEM_THEME.name,
                          onThemeClick:(String)->Unit={}){
-    val themeListMap= hashMapOf(ThemeSelection.SYSTEM_THEME.name to "Use System Theme",
-        ThemeSelection.LIGHT_THEME.name to "Light Theme",ThemeSelection.DARK_THEME.name to "Dark Theme")
+    val themeListMap= linkedMapOf(
+        ThemeSelection.SYSTEM_THEME.name to "Use System Theme",
+        ThemeSelection.LIGHT_THEME.name to "Light Theme",
+        ThemeSelection.DARK_THEME.name to "Dark Theme")
 
     Dialog(onDismissRequest = { dismissAlert() }) {
         Card(modifier = Modifier
