@@ -167,9 +167,8 @@ fun MusicMain(navHostController: NavHostController,
 
         if (showAlert){
             ThemeSelectionDialog(dismissAlert = {showAlert=false},
-                onThemeClick = {
-                    viewModel.setCurrentTheme(it)
-                }, currentTheme = currentTheme)
+                onThemeClick = { viewModel.setCurrentTheme(it) },
+                currentTheme = currentTheme)
         }
     }
 }
