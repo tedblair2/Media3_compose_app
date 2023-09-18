@@ -263,8 +263,14 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                 }
             }
         }
+        val songName=(player.currentMediaItem?.mediaMetadata?.title ?: "Current Song").toString()
+        if (songName != "Current Song"){
+            viewModel.setMiniPlayerVisibility(true)
+        }else{
+            viewModel.setMiniPlayerVisibility(false)
+        }
         playerViewModel.setIsPlayingValue(player.isPlaying)
-        playerViewModel.setSongTitle((player.currentMediaItem?.mediaMetadata?.title ?: "Current Song").toString())
+        playerViewModel.setSongTitle(songName)
         playerViewModel.setSongArtistTitle((player.currentMediaItem?.mediaMetadata?.artist ?: "").toString())
         playerViewModel.setImgUri(player.currentMediaItem?.mediaMetadata?.artworkData)
 
