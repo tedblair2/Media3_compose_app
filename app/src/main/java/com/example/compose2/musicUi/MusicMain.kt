@@ -65,7 +65,8 @@ fun MusicMain(navHostController: NavHostController,
     val playLists by viewModel.playlists.observeAsState()
     var checkDetailScreen by remember { mutableStateOf(ScreenWidget.MAIN) }
     var playListId by remember { mutableStateOf(0) }
-    val showMiniPlayer=viewModel.showMiniPlayer
+    val songName=playerViewModel.songName
+    val showMiniPlayer=viewModel.showMiniPlayer && (songName != "" && songName != "Current Song")
     var showAlert by rememberSaveable { mutableStateOf(false) }
     val themeIcon=when(currentTheme){
         ThemeSelection.DARK_THEME.name->painterResource(id = R.drawable.ic_dark_theme)
