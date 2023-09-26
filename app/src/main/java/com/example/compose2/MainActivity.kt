@@ -53,6 +53,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "position")
@@ -179,7 +180,6 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
         controllerFuture=MediaController.Builder(this,sessionToken).buildAsync()
         controllerFuture.addListener({addPlayerListiner()},ContextCompat.getMainExecutor(this))
     }
-
     override fun onStop() {
         super.onStop()
         MediaController.releaseFuture(controllerFuture)
@@ -226,7 +226,9 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                 viewModel.deleteAudioFromPlaylistAndFavorite(audio)
                 requestPermission()
                 removeAudioFileFromPlayer(audio)
-                Toast.makeText(this@MainActivity, "File deleted successfully", Toast.LENGTH_LONG).show()
+                withContext(Dispatchers.Main){
+                    Toast.makeText(this@MainActivity, "File deleted successfully", Toast.LENGTH_LONG).show()
+                }
             }catch (e:SecurityException){
                 val intentSender=when{
                     Build.VERSION.SDK_INT>=Build.VERSION_CODES.R ->{

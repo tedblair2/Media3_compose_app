@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,22 +42,22 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CreatePlaylist(
+    modifier: Modifier = Modifier,
     songList: List<Audio> = emptyList(),
     title: String = "title",
     currentPlaylist: Playlist?=null,
-    modifier: Modifier = Modifier,
     navHostController: NavHostController,
     playlistViewModel: PlaylistViewModel = koinViewModel()
 ){
     val selectedList = playlistViewModel.selectedList
     val context= LocalContext.current
     val size= with(LocalDensity.current){50.dp.toPx()}.toInt()
-    val playlist=Playlist(title,selectedList)
+    val playlist by remember { derivedStateOf { Playlist(title,selectedList) } }
     Column(modifier = modifier.fillMaxSize()) {
         Row(modifier = modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { navHostController.popBackStack() }, modifier = Modifier.weight(1f)) {
-                Icon(imageVector = Icons.Default.KeyboardArrowLeft,
+                Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                     contentDescription =null,
                     modifier = Modifier.size(65.dp))
             }
@@ -135,7 +136,8 @@ fun CreatePlaylistItem(isSelected:Boolean=false,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End) {
         Box(modifier = Modifier
-            .size(50.dp)){
+            .size(50.dp)
+            .background(color = Color.White)){
             if (songImg != null){
                 val request= ImageRequest.Builder(context)
                     .data(songImg)
@@ -195,7 +197,9 @@ fun PlayListBottom(showBottomSheet:Boolean=false,
     val scope = rememberCoroutineScope()
     if (showBottomSheet){
         ModalBottomSheet(onDismissRequest = { dismissBottomSheet() }, sheetState = sheetState) {
-            LazyColumn(modifier = Modifier.fillMaxSize(0.9f).padding(5.dp)){
+            LazyColumn(modifier = Modifier
+                .fillMaxSize(0.9f)
+                .padding(5.dp)){
                 item {
                     Text(
                         text = "Select Playlist",
