@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -54,6 +54,7 @@ fun MusicMain(navHostController: NavHostController,
     val isCreateScreen=currentDestination?.hierarchy?.any { it.route == Screens.CreatePlaylist.route } ?: false
     val isSearchScreen=currentDestination?.hierarchy?.any { it.route == Screens.SearchSong.route } ?: false
     val view = LocalView.current
+    val currentWindow=(view.context as Activity).window
     val mainColor=MaterialTheme.colorScheme.surfaceVariant.toArgb()
     val playerColor=Color.DarkGray.toArgb()
     val isDark= isSystemInDarkTheme()
@@ -83,15 +84,15 @@ fun MusicMain(navHostController: NavHostController,
     if (!view.isInEditMode) {
         SideEffect {
             if (isPlayerScreen){
-                (view.context as Activity).window.statusBarColor = playerColor
-                (view.context as Activity).window.navigationBarColor=playerColor
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars =false
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars=false
+                currentWindow.statusBarColor = playerColor
+                currentWindow.navigationBarColor=playerColor
+                WindowCompat.getInsetsController(currentWindow,view).isAppearanceLightStatusBars=false
+                WindowCompat.getInsetsController(currentWindow,view).isAppearanceLightNavigationBars=false
             }else{
-                (view.context as Activity).window.statusBarColor = mainColor
-                (view.context as Activity).window.navigationBarColor=mainColor
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars =themeState
-                ViewCompat.getWindowInsetsController(view)?.isAppearanceLightNavigationBars=themeState
+                currentWindow.statusBarColor = mainColor
+                currentWindow.navigationBarColor=mainColor
+                WindowCompat.getInsetsController(currentWindow,view).isAppearanceLightStatusBars=themeState
+                WindowCompat.getInsetsController(currentWindow,view).isAppearanceLightNavigationBars=themeState
             }
         }
     }

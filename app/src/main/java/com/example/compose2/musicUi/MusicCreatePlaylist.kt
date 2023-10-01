@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,7 +77,7 @@ fun CreatePlaylist(
                     mutableStateOf<Bitmap?>(null)
                 }
                 LaunchedEffect(key1 = audio.path){
-                    val bitmap= withContext(Dispatchers.IO){
+                    val bitmap= withContext(Dispatchers.Default){
                         loadBitmap(audio.path,size,size)
                     }
                     songImg=bitmap

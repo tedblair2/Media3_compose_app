@@ -4,14 +4,24 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,20 +58,20 @@ fun MusicAlbums(albumList:List<Audio> = emptyList(),onAlbumClick: (String) -> Un
                 mutableStateOf<Bitmap?>(null)
             }
             LaunchedEffect(key1 = audio.path){
-                val bitmap= withContext(Dispatchers.IO){
+                val bitmap= withContext(Dispatchers.Default){
                     loadBitmap(audio.path,imgWidthPx,height)
                 }
                 albumImage=bitmap
             }
             MusicAlbum(albumName =audio.album,
                 albumImage = albumImage,
-                onAlbumClick = {onAlbumClick(it)}, audioPath = audio.path)
+                onAlbumClick = {onAlbumClick(it)})
         }
     }
 }
 
 @Composable
-fun MusicAlbum(albumName:String,audioPath:String, albumImage: Bitmap?=null,onAlbumClick:(String)->Unit) {
+fun MusicAlbum(albumName:String ,albumImage: Bitmap?=null,onAlbumClick:(String)->Unit) {
     val context= LocalContext.current
     Box(modifier = Modifier
         .fillMaxWidth()

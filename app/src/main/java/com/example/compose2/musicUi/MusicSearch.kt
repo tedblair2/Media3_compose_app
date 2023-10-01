@@ -84,7 +84,7 @@ fun SearchItems(list:List<Audio> = emptyList(),
                 mutableStateOf<Bitmap?>(null)
             }
             LaunchedEffect(key1 = audio.path){
-                val bitmap= withContext(Dispatchers.IO){
+                val bitmap= withContext(Dispatchers.Default){
                     loadBitmap(audio.path,size,size)
                 }
                 songImg=bitmap

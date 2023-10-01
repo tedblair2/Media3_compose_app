@@ -67,7 +67,7 @@ fun MusicPlayer(modifier: Modifier=Modifier,
     val screenWidthPx= with(LocalDensity.current){screenWidth.dp.toPx()}.toInt()
     val imgHeightPx= with(LocalDensity.current){imgHeight.dp.toPx()}.toInt()
     LaunchedEffect(key1 = songTitle){
-        withContext(Dispatchers.IO){
+        withContext(Dispatchers.Default){
             if (songImg != null){
                 songArt= decodeSampledBitmapFromByteArray(songImg!!,screenWidthPx,imgHeightPx)
                 val palette= Palette.from(songArt!!).generate()
@@ -147,7 +147,8 @@ fun PlayerCentre(modifier: Modifier=Modifier,
         contentAlignment = Alignment.BottomCenter) {
         AnimatedContent(targetState = songArt,
             modifier = Modifier.fillMaxSize(),
-            transitionSpec ={ addAnimation()}){img->
+            transitionSpec ={ addAnimation()}, label = "musicImg"
+        ){ img->
             val request= ImageRequest.Builder(context)
                 .data(img)
                 .placeholder(R.drawable.p32)

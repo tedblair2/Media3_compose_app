@@ -3,7 +3,6 @@ package com.example.compose2.musicUi
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
-import android.util.DisplayMetrics
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -163,7 +162,7 @@ fun MusicSongs(list:List<Audio> = emptyList(),
                 val audio=list[position]
                 var songImg by remember(audio.path){ mutableStateOf<Bitmap?>(null) }
                 LaunchedEffect(key1 = audio.path){
-                    val bitmap= withContext(Dispatchers.IO){
+                    val bitmap= withContext(Dispatchers.Default){
                         loadBitmap(audio.path,size,size)
                     }
                     songImg=bitmap
