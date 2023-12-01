@@ -13,7 +13,12 @@ import androidx.navigation.navDeepLink
 import com.example.compose2.model.Audio
 import com.example.compose2.model.Playlist
 import com.example.compose2.model.ScreenWidget
-import com.example.compose2.musicUi.*
+import com.example.compose2.musicUi.CreatePlaylist
+import com.example.compose2.musicUi.MusicDetails
+import com.example.compose2.musicUi.MusicHome
+import com.example.compose2.musicUi.MusicPlayer
+import com.example.compose2.musicUi.MusicSearch
+import com.example.compose2.musicUi.getSongsForAlbum
 import com.example.compose2.viewmodel.PlayerViewModel
 import com.example.compose2.viewmodel.PlaylistViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -94,7 +99,7 @@ fun NavGraphSetUp(
             ) ){navBackStackEntry->
             val age=navBackStackEntry.arguments?.getString(ARG_3).toString()
             val playlistName=navBackStackEntry.arguments?.getString(ARG_4).toString()
-            if (age=="new" ||(age=="exists" && playlistName=="Favorite")){
+            if (age=="new" ||(age=="exists" && playlistName=="Favorites")){
                 CreatePlaylist(
                     songList = songList,
                     title = playlistName, modifier = modifier,

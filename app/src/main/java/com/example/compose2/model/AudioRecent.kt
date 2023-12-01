@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "recent_table")
 data class AudioRecent(
     @PrimaryKey(autoGenerate = true)
-    val audioId:Int=0,
+    val audioId:Long=0,
     val id:Int,
     val name:String,
     val artist:String,

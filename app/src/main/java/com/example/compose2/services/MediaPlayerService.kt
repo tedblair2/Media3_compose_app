@@ -11,17 +11,26 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.net.toUri
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.media3.common.*
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.session.*
+import androidx.media3.session.CommandButton
+import androidx.media3.session.MediaNotification
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
+import androidx.media3.session.MediaStyleNotificationHelper
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import com.example.compose2.MainActivity
 import com.example.compose2.R
 import com.example.compose2.Util
-import com.example.compose2.dataStore
 import com.example.compose2.model.Audio
 import com.example.compose2.musicUi.getAlbumArt
+import com.example.compose2.pref.DataPrefService
 import com.example.compose2.repository.MuzikiRepository
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -29,9 +38,9 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
@@ -39,8 +48,9 @@ import org.koin.android.ext.android.inject
     private var mediaSession:MediaSession?=null
     private lateinit var player: ExoPlayer
     private val muzikiRepository by inject<MuzikiRepository>()
-    private val lastPosition= intPreferencesKey("lastPosition")
+    private val serviceScope= CoroutineScope(SupervisorJob()+Dispatchers.Default)
 
+    private val dataPrefService by inject<DataPrefService>()
     override fun onCreate() {
         super.onCreate()
         val audioAttributes= AudioAttributes.Builder()
@@ -184,20 +194,15 @@ import org.koin.android.ext.android.inject
         controller: MediaSession.ControllerInfo
     ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
         val settable=SettableFuture.create<MediaSession.MediaItemsWithStartPosition>()
-        CoroutineScope(Dispatchers.Default).launch {
-            val lastPosition=getLastPosition().first()
+        serviceScope.launch {
+            val lastPosition=dataPrefService.getLastPosition().first()
             val list=muzikiRepository.getRecentList().first()
             val mediaItemsWithStartPosition=MediaSession.MediaItemsWithStartPosition(
-                setMediaItems(list.map { it.audioRecentToAudio() }),lastPosition,0
+                setMediaItems(list.map { it.audioRecentToAudio() }),lastPosition.toInt(),0
             )
             settable.set(mediaItemsWithStartPosition)
         }
         return settable
-    }
-    private fun getLastPosition(): Flow<Int> {
-        return dataStore.data.map { pref ->
-            pref[lastPosition] ?: 0
-        }
     }
 
     override fun onDestroy() {
@@ -206,6 +211,7 @@ import org.koin.android.ext.android.inject
             release()
             mediaSession=null
         }
+        serviceScope.cancel()
         super.onDestroy()
     }
 

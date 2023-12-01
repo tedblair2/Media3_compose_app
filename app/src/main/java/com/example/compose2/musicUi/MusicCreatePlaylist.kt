@@ -53,7 +53,9 @@ fun CreatePlaylist(
     val size= with(LocalDensity.current){50.dp.toPx()}.toInt()
     val playlist by remember { derivedStateOf { Playlist(title,selectedList) } }
     Column(modifier = modifier.fillMaxSize()) {
-        Row(modifier = modifier.fillMaxWidth(),
+        Row(modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
             verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = { navHostController.popBackStack() }, modifier = Modifier.weight(1f)) {
                 Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -194,56 +196,61 @@ fun PlayListBottom(showBottomSheet:Boolean=false,
 ) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+    val context= LocalContext.current
     if (showBottomSheet){
-        ModalBottomSheet(onDismissRequest = { dismissBottomSheet() }, sheetState = sheetState) {
-            LazyColumn(modifier = Modifier
-                .fillMaxSize(0.9f)
-                .padding(5.dp)){
-                item {
-                    Text(
-                        text = "Select Playlist",
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyLarge, fontSize = 24.sp,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                items(items = playlists, key = {it.id}){
-                    Row(modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            onItemClick(it)
-                            scope
-                                .launch {
-                                    sheetState.hide()
-                                }
-                                .invokeOnCompletion {
-                                    if (!sheetState.isVisible) {
-                                        dismissBottomSheet()
+        if (playlists.isEmpty()){
+            Toast.makeText(context, "No Playlist available!", Toast.LENGTH_SHORT).show()
+        }else{
+            ModalBottomSheet(onDismissRequest = { dismissBottomSheet() }, sheetState = sheetState) {
+                LazyColumn(modifier = Modifier
+                    .fillMaxSize()
+                    .padding(5.dp)){
+                    item {
+                        Text(
+                            text = "Select Playlist",
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.bodyLarge, fontSize = 24.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    items(items = playlists, key = {it.id}){
+                        Row(modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+                                onItemClick(it)
+                                scope
+                                    .launch {
+                                        sheetState.hide()
                                     }
-                                }
-                        },
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End) {
-                        Box(modifier = Modifier
-                            .size(50.dp)){
-                            Image(painter = painterResource(id = R.drawable.baseline_queue_music_24),
-                                contentDescription =null,
-                                modifier = Modifier
-                                    .fillMaxSize(),
-                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground))
-                        }
-                        Column(modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(text = it.name,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                            Text(text = "${it.songs.size} Songs",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                                    .invokeOnCompletion {
+                                        if (!sheetState.isVisible) {
+                                            dismissBottomSheet()
+                                        }
+                                    }
+                            },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.End) {
+                            Box(modifier = Modifier
+                                .size(50.dp)){
+                                Image(painter = painterResource(id = R.drawable.baseline_queue_music_24),
+                                    contentDescription =null,
+                                    modifier = Modifier
+                                        .fillMaxSize(),
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground))
+                            }
+                            Column(modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(text = it.name,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(text = "${it.songs.size} Songs",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                         }
                     }
                 }

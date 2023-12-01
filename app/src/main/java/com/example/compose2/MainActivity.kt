@@ -80,7 +80,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val currentTheme by viewModel.getCurrentTheme().collectAsState(initial = ThemeSelection.SYSTEM_THEME.name)
+            val currentTheme by viewModel.currentThemeFlow.collectAsState()
             Compose2Theme(darkTheme = when(currentTheme){
                 ThemeSelection.LIGHT_THEME.name->false
                 ThemeSelection.DARK_THEME.name->true
@@ -101,7 +101,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                             kotlin.run {
                                 val player = this.controller ?: return@run
                                 viewModel.addRecentPlaylist(list)
-                                viewModel.setLastPosition(pos)
+                                viewModel.setLastPosition(pos.toLong())
                                 player.setMediaItems(setMediaItems(list), pos, 0)
                                 player.prepare()
                                 player.play()
@@ -260,14 +260,14 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
         val player=this.controller ?: return
         if (player.playbackState == ExoPlayer.STATE_IDLE){
             lifecycleScope.launch {
-                val pos=viewModel.getLastPosition().first()
+                val pos =viewModel.getLastPosition().first()
                 val list=viewModel.recentPlaylist.first()
                 if (list.isEmpty()){
                     viewModel.setMiniPlayerVisibility(false)
                 }else{
                     player.clearMediaItems()
                     val mediaItems=setMediaItems(list.map { it.audioRecentToAudio() })
-                    player.setMediaItems(mediaItems,pos,0)
+                    player.setMediaItems(mediaItems,pos.toInt(),0)
                     player.prepare()
                     viewModel.setMiniPlayerVisibility(true)
                 }
@@ -307,7 +307,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                 }else{
                     playerViewModel.setSongDurationValue(0f)
                 }
-                viewModel.setLastPosition(player.currentMediaItemIndex)
+                viewModel.setLastPosition(player.currentMediaItemIndex.toLong())
                 updatePlayerProgress(player)
             }
 
@@ -324,7 +324,7 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
                     }
                     updatePlayerProgress(player)
                 }else if (playbackState==ExoPlayer.STATE_ENDED){
-                    viewModel.setLastPosition(player.currentMediaItemIndex)
+                    viewModel.setLastPosition(player.currentMediaItemIndex.toLong())
                 }
             }
 
@@ -400,22 +400,22 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "po
         )
         val sort = "${MediaStore.Audio.Media.DATE_ADDED} DESC"
         val cursor = contentResolver.query(mediaStoreuri, projection, null, null, sort)
-        if (cursor != null) {
-            while (cursor.moveToNext()) {
-                var name = cursor.getString(1)
-                val artist = cursor.getString(2)
-                val album = cursor.getString(3)
-                val duration = cursor.getLong(4)
-                val path = cursor.getString(6)
-                val size = cursor.getLong(5)
-                val id = cursor.getInt(0)
-                if (size > 1048576 && !name.endsWith(".amr")) {
-                    name = name.replace(".mp3", "").replace(".wav", "")
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                var name = it.getString(1)
+                val artist = it.getString(2)
+                val album = it.getString(3)
+                val duration = it.getLong(4)
+                val path = it.getString(6)
+                val size = it.getLong(5)
+                val id = it.getInt(0)
+                if (size > 1048576 && !name.endsWith(".amr") && album !="WhatsApp Audio") {
+                    name = name.replace(".mp3", "").replace(".wav", "").replace(".aac","")
                     val audio = Audio(id, name, artist, album, path, duration,null)
                     list.add(audio)
                 }
             }
-            cursor.close()
         }
         if (list.size<=10){
             viewModel.setRecentSongs(list)

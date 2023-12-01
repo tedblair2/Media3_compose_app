@@ -1,26 +1,25 @@
 package com.example.compose2.viewmodel
 
-import android.app.Application
 import androidx.compose.runtime.mutableStateOf
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.lifecycle.*
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.example.compose2.dataStore
 import com.example.compose2.model.Audio
 import com.example.compose2.model.AudioRecent
 import com.example.compose2.model.Playlist
 import com.example.compose2.model.ThemeSelection
+import com.example.compose2.pref.DataPrefService
 import com.example.compose2.repository.MuzikiRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 @OptIn(SavedStateHandleSaveableApi::class)
-class MuzikiViewModel(private val repository: MuzikiRepository, private val application: Application,
+class MuzikiViewModel(private val repository: MuzikiRepository,
+                      private val dataPrefService: DataPrefService,
                       savedStateHandle: SavedStateHandle):ViewModel(){
 
     private val _allSongs= MutableLiveData<ArrayList<Audio>>()
@@ -38,9 +37,10 @@ class MuzikiViewModel(private val repository: MuzikiRepository, private val appl
 
     val recentPlaylist:Flow<List<AudioRecent>> = repository.getRecentList()
 
-    private val lastPosition= intPreferencesKey("lastPosition")
 
-    private val currentTheme= stringPreferencesKey("currentTheme")
+    val currentThemeFlow=dataPrefService.getCurrentTheme()
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),ThemeSelection.SYSTEM_THEME.name)
 
 
     var showMiniPlayer by savedStateHandle.saveable { mutableStateOf(true) }
@@ -86,30 +86,18 @@ class MuzikiViewModel(private val repository: MuzikiRepository, private val appl
             repository.addAudioListToDb(list)
         }
     }
-    fun setLastPosition(pos:Int){
+    fun setLastPosition(pos:Long){
         viewModelScope.launch(Dispatchers.IO) {
-            application.dataStore.edit {mutablePreferences ->
-                mutablePreferences[lastPosition]=pos
-            }
+            dataPrefService.setLastPosition(pos)
         }
     }
 
     fun setCurrentTheme(selectedTheme: String){
         viewModelScope.launch(Dispatchers.IO) {
-            application.dataStore.edit { themepref->
-                themepref[currentTheme]=selectedTheme
-            }
+            dataPrefService.setCurrentTheme(selectedTheme)
         }
     }
-    fun getLastPosition():Flow<Int>{
-        return application.dataStore.data.map { pref->
-            pref[lastPosition] ?: 0
-        }
-    }
-
-    fun getCurrentTheme():Flow<String>{
-        return application.dataStore.data.map { pref->
-            pref[currentTheme] ?: ThemeSelection.SYSTEM_THEME.name
-        }
+    fun getLastPosition():Flow<Long>{
+        return dataPrefService.getLastPosition()
     }
 }
