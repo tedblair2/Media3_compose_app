@@ -18,9 +18,7 @@ constraint-layout-version="1.0.1"
 media3-version="1.3.1"
 palette-version="1.0.0"
 room-version="2.6.1"
-coroutines-guava-version="1.7.3"
 datastore_version="1.1.1"
-glide-version="4.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,8 +49,6 @@ media3-common={module="androidx.media3:media3-common",version.ref="media3-versio
 palette={module="androidx.palette:palette-ktx",version.ref="palette-version"}
 room-ktx={module="androidx.room:room-ktx",version.ref="room-version"}
 room-compiler={module="androidx.room:room-compiler",version.ref="room-version"}
-glide={module="com.github.bumptech.glide:glide",version.ref="glide-version"}
-coroutines-guava={module="org.jetbrains.kotlinx:kotlinx-coroutines-guava",version.ref="coroutines-guava-version"}
 datastore={module="androidx.datastore:datastore-preferences",version.ref="datastore_version"}
 
 [bundles]
