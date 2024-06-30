@@ -155,9 +155,9 @@ fun CreatePlaylistItem(
             .background(Color.White)){
             val request= ImageRequest.Builder(context)
                 .data(audio.picture)
-                .placeholder(R.drawable.p32)
-                .error(R.drawable.p32)
-                .fallback(R.drawable.p32)
+                .placeholder(R.drawable.p33)
+                .error(R.drawable.p33)
+                .fallback(R.drawable.p33)
                 .memoryCacheKey(audio.id.toString())
                 .diskCacheKey(audio.id.toString())
                 .memoryCachePolicy(CachePolicy.ENABLED)

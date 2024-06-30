@@ -107,9 +107,9 @@ fun MiniPlayerScreenContent(
                 if (songImage != null){
                     val request= ImageRequest.Builder(context)
                         .data(songImage)
-                        .placeholder(R.drawable.p32)
-                        .error(R.drawable.p32)
-                        .fallback(R.drawable.p32)
+                        .placeholder(R.drawable.p33)
+                        .error(R.drawable.p33)
+                        .fallback(R.drawable.p33)
                         .memoryCacheKey(playerScreenState.songName)
                         .diskCacheKey(playerScreenState.songName)
                         .memoryCachePolicy(CachePolicy.ENABLED)
@@ -123,7 +123,7 @@ fun MiniPlayerScreenContent(
                             .background(color=Color.White),
                         contentScale = ContentScale.Crop)
                 }else{
-                    Image(painter = painterResource(id =R.drawable.p32) ,
+                    Image(painter = painterResource(id =R.drawable.p33) ,
                         contentDescription =null,
                         modifier =Modifier
                             .fillMaxSize()

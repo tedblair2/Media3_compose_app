@@ -80,8 +80,6 @@ dependencies {
     //room
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
-    //coroutines guava
-    implementation(libs.coroutines.guava)
     //datastore
     implementation(libs.datastore)
     testImplementation(libs.junit)

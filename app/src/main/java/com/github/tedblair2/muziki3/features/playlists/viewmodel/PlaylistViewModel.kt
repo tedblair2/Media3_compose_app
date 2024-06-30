@@ -7,6 +7,7 @@ import com.github.tedblair2.muziki3.core.local.RoomRepository
 import com.github.tedblair2.muziki3.core.local.model.Audio
 import com.github.tedblair2.muziki3.data.redux.Store
 import com.github.tedblair2.muziki3.features.playlists.ui.PlaylistScreenState
+import com.github.tedblair2.muziki3.helpers.songCountString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -61,7 +62,7 @@ class PlaylistViewModel @Inject constructor(
                 .collect{appState->
                     _playlistScreenState.update {
                         val audioList= getRecentSongs(appState.songs)
-                        it.copy(recentCount = "${audioList.size} Songs")
+                        it.copy(recentCount = songCountString(audioList.size))
                     }
                 }
         }
@@ -87,7 +88,7 @@ class PlaylistViewModel @Inject constructor(
                 .flowOn(appCoroutineContext.io)
                 .collect{audioList->
                     _playlistScreenState.update {
-                        it.copy(favouriteCount = "${audioList.size} Songs")
+                        it.copy(favouriteCount = songCountString(audioList.size))
                     }
                 }
         }

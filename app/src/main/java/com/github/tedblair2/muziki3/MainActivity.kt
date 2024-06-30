@@ -346,7 +346,7 @@ class MainActivity : ComponentActivity() {
     private fun updatePlayerProgress(player:MediaController){
         lifecycleScope.launch {
             delay(1000)
-            if (player.isPlaying && playerProgressUpdate){
+            if (player.isPlaying){
                 dispatch?.invoke(PlayerEvents.SetCurrentPosition(player.currentPosition.toFloat()))
             }
             updatePlayerProgress(player)

@@ -3,8 +3,8 @@ agp = "8.4.2"
 kotlin = "1.9.23"
 coreKtx = "1.13.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
 lifecycleRuntimeKtx = "2.8.2"
 activityCompose = "1.9.0"
 composeBom = "2024.06.00"
@@ -12,7 +12,7 @@ ksp-plugin-version="1.9.23-1.0.20"
 hilt-version="2.49"
 compose-hilt-navigation-version="1.2.0"
 coil-version="2.4.0"
-compose-navigation-version="2.8.0-beta03"
+compose-navigation-version="2.8.0-beta04"
 serialization = "1.6.3"
 constraint-layout-version="1.0.1"
 media3-version="1.3.1"
@@ -20,6 +20,7 @@ palette-version="1.0.0"
 room-version="2.6.1"
 coroutines-guava-version="1.7.3"
 datastore_version="1.1.1"
+glide-version="4.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -50,6 +51,7 @@ media3-common={module="androidx.media3:media3-common",version.ref="media3-versio
 palette={module="androidx.palette:palette-ktx",version.ref="palette-version"}
 room-ktx={module="androidx.room:room-ktx",version.ref="room-version"}
 room-compiler={module="androidx.room:room-compiler",version.ref="room-version"}
+glide={module="com.github.bumptech.glide:glide",version.ref="glide-version"}
 coroutines-guava={module="org.jetbrains.kotlinx:kotlinx-coroutines-guava",version.ref="coroutines-guava-version"}
 datastore={module="androidx.datastore:datastore-preferences",version.ref="datastore_version"}
 

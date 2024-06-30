@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.TaskStackBuilder
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -67,8 +68,11 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
 
     private val serviceScope=CoroutineScope(SupervisorJob()+Dispatchers.IO)
 
+    private var defaultBitmap: Bitmap? =null
+
     override fun onCreate() {
         super.onCreate()
+        defaultBitmap= BitmapFactory.decodeResource(resources,R.drawable.p33)
         val audioAttributes= AudioAttributes.Builder()
             .setUsage(C.USAGE_MEDIA)
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
@@ -96,9 +100,9 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
             ): MediaNotification {
                 val art=mediaSession.player.currentMediaItem!!.mediaMetadata.artworkData
                 val bitmap=if(art != null){
-                    loadBitmapFromByteArray(art,80,80,this@MediaPlayerService)
+                    loadBitmapFromByteArray(art,100,100,this@MediaPlayerService)
                 }else{
-                    BitmapFactory.decodeResource(resources,R.drawable.p32)
+                    defaultBitmap
                 }
 
                 val playPauseIcon=if (mediaSession.player.isPlaying){
@@ -123,7 +127,7 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
                     "Stop",Util.STOP_ACTION,Bundle())
 
                 val notificationBuilder=NotificationCompat.Builder(this@MediaPlayerService,Util.CHANNEL_ID)
-                    .setSmallIcon(R.drawable.p32)
+                    .setSmallIcon(R.drawable.p33)
                     .setLargeIcon(bitmap)
                     .setContentTitle(mediaSession.player.currentMediaItem!!.mediaMetadata.title)
                     .setContentText(mediaSession.player.currentMediaItem!!.mediaMetadata.artist)
@@ -136,9 +140,10 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
                     .setStyle(
                         MediaStyleNotificationHelper.MediaStyle(mediaSession)
                         .setShowActionsInCompactView(1))
-                    .build()
 
-                return MediaNotification(Util.NOTIFICATION_ID,notificationBuilder)
+                val notification=notificationBuilder.build()
+
+                return MediaNotification(Util.NOTIFICATION_ID,notification)
             }
 
             override fun handleCustomCommand(

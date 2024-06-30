@@ -218,7 +218,7 @@ class RoomRepository @Inject constructor(
             options.inSampleSize = 4
             BitmapFactory.decodeByteArray(art,0,art.size,options)
         }else{
-            BitmapFactory.decodeResource(context.resources, R.drawable.p32)
+            BitmapFactory.decodeResource(context.resources, R.drawable.p33)
         }
     }
 

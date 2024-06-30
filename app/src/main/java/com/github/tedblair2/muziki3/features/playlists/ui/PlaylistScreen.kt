@@ -47,6 +47,7 @@ import com.github.tedblair2.muziki3.core.local.model.Playlist
 import com.github.tedblair2.muziki3.features.details.ui.DetailScreenType
 import com.github.tedblair2.muziki3.features.playlists.viewmodel.PlaylistScreenEvents
 import com.github.tedblair2.muziki3.features.playlists.viewmodel.PlaylistViewModel
+import com.github.tedblair2.muziki3.helpers.songCountString
 
 @Composable
 fun PlaylistsScreen(
@@ -152,7 +153,7 @@ fun PlaylistRow(
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodyLarge
             )
-            Text(text = "${playlist.songs.size} Songs" ,
+            Text(text = songCountString(playlist.songs.size),
                 style = MaterialTheme.typography.bodyMedium
             )
         }

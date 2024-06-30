@@ -67,6 +67,7 @@ class SongsViewmodel @Inject constructor(
             is SongsScreenEvents.OnAudioClick->{
                 kotlin.run {
                     val player = this.mediaController ?: return@run
+                    player.clearMediaItems()
                     player.setMediaItems(setMediaItems(event.songs), event.position, 0)
                     player.prepare()
                     player.play()

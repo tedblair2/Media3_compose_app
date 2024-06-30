@@ -23,6 +23,14 @@ fun Long.pad(): String {
     return this.toString().padStart(2, '0')
 }
 
+fun songCountString(count: Int): String {
+    return if (count==1){
+        "$count song"
+    }else{
+        "$count songs"
+    }
+}
+
 fun loadBitmapFromByteArray(data: ByteArray?,maxWidth:Int,maxHeight: Int,context: Context): Bitmap {
     return if (data != null) {
         decodeSampledBitmapFromByteArray(data,maxWidth, maxHeight)
