@@ -55,24 +55,15 @@ android {
 
 dependencies {
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+    implementation(libs.bundles.androidx)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.bundles.compose)
     //hilt
     implementation(libs.bundles.hilt)
     ksp(libs.dagger.hilt.ksp)
-    //coil
-    implementation(libs.coil.compose)
-    
-    implementation(libs.compose.navigation)
+
+    implementation(libs.bundles.other.compose)
     implementation(libs.kotlinx.serialization.json)
-    //constraint layout
-    implementation(libs.constraint.layout)
     //media3
     implementation(libs.bundles.media3)
     //palette
