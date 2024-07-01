@@ -50,6 +50,25 @@ class RoomRepository @Inject constructor(
         }
     }
 
+    suspend fun addToFavoriteFromNotification(name:String,artist:String,album:String){
+        if (audioInFavorites(name, artist, album)){
+            favoritesDao.deleteAudioByName(name, artist, album)
+        }else{
+            recentsDao.getSongs().collect {
+                val audioRecent=it.find { audio->
+                    audio.name==name && audio.artist==artist && audio.album==album
+                }
+                if (audioRecent != null){
+                    favoritesDao.addAudio(audioRecent.toAudio().copy(dateAdded = System.currentTimeMillis()))
+                }
+            }
+        }
+    }
+
+    suspend fun audioInFavorites(name:String,artist:String,album:String):Boolean{
+        return favoritesDao.getAudioByName(name, artist, album) != null
+    }
+
     suspend fun addAudioListToFavorites(songs:List<Audio>){
         favoritesDao.addAudioList(
             songs = songs.map { it.copy(dateAdded = System.currentTimeMillis()) }
@@ -152,7 +171,6 @@ class RoomRepository @Inject constructor(
 
     private suspend fun AudioRecent.toAudio():Audio{
         val artWork=getSongImage(path)
-        val bitmap=generateBitmap(artWork)
         return Audio(
             id = id,
             name = name,
@@ -161,8 +179,7 @@ class RoomRepository @Inject constructor(
             path = path,
             duration = duration,
             dateAdded = dateAdded,
-            artWork = artWork,
-            picture = bitmap
+            artWork = artWork
         )
     }
 

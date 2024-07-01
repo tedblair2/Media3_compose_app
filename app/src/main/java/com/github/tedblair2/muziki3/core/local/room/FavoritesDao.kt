@@ -26,4 +26,9 @@ interface FavoritesDao {
     @Query("Select * from favorites where id = :id")
     suspend fun getAudio(id:Int):Audio?
 
+    @Query("Select * from favorites where name = :name and artist = :artist and album = :album")
+    suspend fun getAudioByName(name:String,artist:String,album:String):Audio?
+
+    @Query("Delete from favorites where name = :name and artist = :artist and album = :album")
+    suspend fun deleteAudioByName(name:String,artist:String,album:String)
 }

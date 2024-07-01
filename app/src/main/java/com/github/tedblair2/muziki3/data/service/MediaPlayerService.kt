@@ -45,7 +45,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -70,6 +73,9 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
 
     private var defaultBitmap: Bitmap? =null
 
+    private val _currentAudioState= MutableStateFlow(CurrentAudioState())
+    private val currentAudioState=_currentAudioState.asStateFlow()
+
     override fun onCreate() {
         super.onCreate()
         defaultBitmap= BitmapFactory.decodeResource(resources,R.drawable.p33)
@@ -83,11 +89,16 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
             .setCallback(this)
             .setCustomLayout(
                 ImmutableList.of(
-                CommandButton.Builder()
-                    .setDisplayName("Stop")
-                    .setIconResId(R.drawable.baseline_stop_24)
-                    .setSessionCommand(SessionCommand(Util.STOP_ACTION, Bundle()))
-                    .build()
+                    CommandButton.Builder()
+                        .setDisplayName(currentAudioState.value.title)
+                        .setIconResId(currentAudioState.value.icon)
+                        .setSessionCommand(SessionCommand(Util.FAV_ACTION,Bundle()))
+                        .build(),
+                    CommandButton.Builder()
+                        .setDisplayName("Stop")
+                        .setIconResId(R.drawable.baseline_stop_24)
+                        .setSessionCommand(SessionCommand(Util.STOP_ACTION, Bundle()))
+                        .build()
             ))
             .build()
 
@@ -98,11 +109,27 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
                 actionFactory: MediaNotification.ActionFactory ,
                 onNotificationChangedCallback: MediaNotification.Provider.Callback
             ): MediaNotification {
+                val songName=mediaSession.player.currentMediaItem!!.mediaMetadata.title.toString()
+                val songArtist=mediaSession.player.currentMediaItem!!.mediaMetadata.artist.toString()
+                val songAlbum=mediaSession.player.currentMediaItem!!.mediaMetadata.albumTitle.toString()
                 val art=mediaSession.player.currentMediaItem!!.mediaMetadata.artworkData
                 val bitmap=if(art != null){
                     loadBitmapFromByteArray(art,100,100,this@MediaPlayerService)
                 }else{
                     defaultBitmap
+                }
+
+                serviceScope.launch {
+                    val isFavorite=roomRepository.audioInFavorites(songName,songArtist,songAlbum)
+                    println("isFavorite $isFavorite")
+                    _currentAudioState.update {
+                        it.copy(
+                            isInFavorite = isFavorite,
+                            name = songName,
+                            artist = songArtist,
+                            album = songAlbum
+                        )
+                    }
                 }
 
                 val playPauseIcon=if (mediaSession.player.isPlaying){
@@ -125,14 +152,23 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
                 val stopAction=actionFactory.createCustomAction(mediaSession,
                     IconCompat.createWithResource(this@MediaPlayerService,R.drawable.baseline_stop_24),
                     "Stop",Util.STOP_ACTION,Bundle())
+                val favAction=actionFactory.createCustomAction(
+                    mediaSession,
+                    IconCompat.createWithResource(this@MediaPlayerService,currentAudioState.value.icon),
+                    currentAudioState.value.title,
+                    Util.FAV_ACTION,
+                    Bundle()
+                )
+
 
                 val notificationBuilder=NotificationCompat.Builder(this@MediaPlayerService,Util.CHANNEL_ID)
                     .setSmallIcon(R.drawable.p33)
                     .setLargeIcon(bitmap)
-                    .setContentTitle(mediaSession.player.currentMediaItem!!.mediaMetadata.title)
-                    .setContentText(mediaSession.player.currentMediaItem!!.mediaMetadata.artist)
+                    .setContentTitle(songName)
+                    .setContentText(songArtist)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setContentIntent(mediaSession.sessionActivity)
+                    .addAction(favAction)
                     .addAction(prevAction)
                     .addAction(playPauseAction)
                     .addAction(nextAction)
@@ -151,13 +187,18 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
                 action: String ,
                 extras: Bundle
             ): Boolean {
-                if (action==Util.STOP_ACTION){
-                    stopPlayer()
-                    return true
+                return when(action){
+                    Util.FAV_ACTION->{
+                        addAudioToFavorite()
+                        true
+                    }
+                    Util.STOP_ACTION->{
+                        stopPlayer()
+                        true
+                    }
+                    else -> false
                 }
-                return false
             }
-
         })
     }
 
@@ -172,6 +213,7 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
         val connectionResult=super.onConnect(session, controller)
         val sessionCommands=connectionResult.availableSessionCommands
             .buildUpon()
+            .add(SessionCommand(Util.FAV_ACTION,Bundle()))
             .add(SessionCommand(Util.STOP_ACTION, Bundle()))
             .build()
         return MediaSession.ConnectionResult.accept(sessionCommands,connectionResult.availablePlayerCommands)
@@ -183,11 +225,17 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
         customCommand: SessionCommand ,
         args: Bundle
     ): ListenableFuture<SessionResult> {
-        if (customCommand.customAction==Util.STOP_ACTION){
-            stopPlayer()
-            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        return when(customCommand.customAction){
+            Util.FAV_ACTION->{
+                addAudioToFavorite()
+                Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+            }
+            Util.STOP_ACTION->{
+                stopPlayer()
+                Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+            }
+            else-> super.onCustomCommand(session, controller, customCommand, args)
         }
-        return super.onCustomCommand(session, controller, customCommand, args)
     }
 
     override fun onPostConnect(session: MediaSession , controller: MediaSession.ControllerInfo) {
@@ -206,12 +254,17 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
             .setIconResId(R.drawable.baseline_skip_previous_24)
             .setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS)
             .build()
+        val favBtn=CommandButton.Builder()
+            .setDisplayName(currentAudioState.value.title)
+            .setIconResId(if (currentAudioState.value.isInFavorite) R.drawable.baseline_favorite_24 else R.drawable.baseline_favorite_border_24)
+            .setSessionCommand(SessionCommand(Util.FAV_ACTION,Bundle()))
+            .build()
         val stopBtn=CommandButton.Builder()
             .setDisplayName("Stop")
             .setIconResId(R.drawable.baseline_stop_24)
             .setSessionCommand(SessionCommand(Util.STOP_ACTION, Bundle()))
             .build()
-        session.setCustomLayout(controller, listOf(prevBtn,playPauseBtn,nextBtn,stopBtn))
+        session.setCustomLayout(controller, listOf(favBtn,prevBtn,playPauseBtn,nextBtn,stopBtn))
         super.onPostConnect(session , controller)
     }
 
@@ -241,6 +294,15 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
         }
         serviceScope.cancel()
         super.onDestroy()
+    }
+
+    private fun addAudioToFavorite(){
+        serviceScope.launch {
+            val name=currentAudioState.value.name
+            val artist=currentAudioState.value.artist
+            val album=currentAudioState.value.album
+            roomRepository.addToFavoriteFromNotification(name, artist, album)
+        }
     }
 
     private fun notificationIntent(): PendingIntent {

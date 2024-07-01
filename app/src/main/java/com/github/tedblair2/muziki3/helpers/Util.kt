@@ -5,4 +5,5 @@ object Util {
     const val CHANNEL_NAME="MuzikiApp"
     const val NOTIFICATION_ID=25
     const val STOP_ACTION="stop_action"
+    const val FAV_ACTION="fav_action"
 }
