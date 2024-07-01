@@ -254,7 +254,7 @@ class MainActivity : ComponentActivity() {
                     if (pos<songs.size){
                         player.setMediaItems(mediaItems,pos.toInt(),0)
                     }else{
-                        player.setMediaItems(mediaItems,0,0)
+                        player.setMediaItems(mediaItems,songs.size-1,0)
                     }
                     player.prepare()
                     dispatch?.invoke(PlayerEvents.MiniPlayerVisibility(true))
