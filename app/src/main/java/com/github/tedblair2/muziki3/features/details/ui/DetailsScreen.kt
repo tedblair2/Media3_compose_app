@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -67,6 +68,7 @@ import com.github.tedblair2.muziki3.features.miniplayer.ui.MiniPlayerScreen
 import com.github.tedblair2.muziki3.features.playlistbottom.ui.PlaylistBottom
 import com.github.tedblair2.muziki3.helpers.ScreenWidget
 import com.github.tedblair2.muziki3.helpers.ShimmerEffect
+import com.github.tedblair2.muziki3.helpers.isScrollingUp
 import com.github.tedblair2.muziki3.helpers.loadBitmapFromByteArray
 
 @Composable
@@ -91,6 +93,7 @@ fun DetailsScreen(
     }
     var showSheet by remember { mutableStateOf(false) }
     var currentAudio by remember { mutableStateOf<Audio?>(null) }
+    val lazyListState=rememberLazyListState()
 
     val view=LocalView.current
     val window=(view.context as Activity).window
@@ -135,7 +138,9 @@ fun DetailsScreen(
     Scaffold(
         modifier=modifier.fillMaxSize(),
         floatingActionButton = {
-            AnimatedVisibility(visible = showButton) {
+            AnimatedVisibility(
+                visible = showButton && lazyListState.isScrollingUp()
+            ) {
                 val customModifier=if (detailsScreenState.isMiniPlayerVisible) Modifier.padding(bottom = 75.dp)
                 else Modifier
 
@@ -166,26 +171,30 @@ fun DetailsScreen(
             }
         }
     ) {paddingValues ->
-        Box(modifier =Modifier
+        Box(modifier = Modifier
             .padding(paddingValues)
             .fillMaxSize()
         ){
             Column(modifier = Modifier.fillMaxSize()) {
                 ConstraintLayout(
                     constraintSet = initialConstraints(),
-                    modifier = Modifier.fillMaxWidth().weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
                     Box(
-                        modifier =Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                             .layoutId("header")
                     )
 
 
-                    LazyColumn(modifier =Modifier
+                    LazyColumn(modifier = Modifier
                         .fillMaxWidth()
-                        .layoutId("body")){
+                        .layoutId("body"),
+                        state = lazyListState
+                    ){
 
                         if (detailsScreenState.isLoading){
                             items(count = 15){
@@ -322,22 +331,22 @@ fun DetailsHeader(modifier: Modifier=Modifier ,
                 contentDescription =null,
                 imageLoader = context.imageLoader,
                 contentScale = ContentScale.Crop,
-                modifier =Modifier
+                modifier = Modifier
                     .fillMaxSize()
-                    .background(color=Color.White) )
+                    .background(color = Color.White) )
         }else{
             Image(painter = painterResource(id = R.drawable.p32),
                 contentDescription = null, contentScale = ContentScale.FillWidth,
-                modifier =Modifier
+                modifier = Modifier
                     .fillMaxSize()
-                    .background(color=Color.White))
+                    .background(color = Color.White))
         }
-        Box(modifier =Modifier
+        Box(modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(0.7f)
             .background(
-                brush=Brush.verticalGradient(
-                    colors=listOf(Color.Transparent , Color.DarkGray)
+                brush = Brush.verticalGradient(
+                    colors = listOf(Color.Transparent , Color.DarkGray)
                 )
             ))
     }

@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -86,6 +87,7 @@ import com.github.tedblair2.muziki3.features.home.viewmodel.HomeScreenEvents
 import com.github.tedblair2.muziki3.features.miniplayer.ui.MiniPlayerScreen
 import com.github.tedblair2.muziki3.features.playlists.ui.PlaylistsScreen
 import com.github.tedblair2.muziki3.helpers.TabScreens
+import com.github.tedblair2.muziki3.helpers.isScrollingUp
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -108,7 +110,8 @@ fun HomeScreen(
     var showThemeDialog by remember {
         mutableStateOf(false)
     }
-
+    val lazyListState=rememberLazyListState()
+    val isDark= isSystemInDarkTheme()
     val themeIcon=when(homeScreenState.currentTheme){
         CurrentTheme.LIGHT_THEME->{
             painterResource(id=R.drawable.baseline_sunny_24)
@@ -117,7 +120,7 @@ fun HomeScreen(
             painterResource(id=R.drawable.baseline_dark_mode_24)
         }
         else->{
-            if (isSystemInDarkTheme()) painterResource(id=R.drawable.baseline_dark_mode_24) else painterResource(
+            if (isDark) painterResource(id=R.drawable.baseline_dark_mode_24) else painterResource(
                 id=R.drawable.baseline_sunny_24
             )
         }
@@ -126,7 +129,7 @@ fun HomeScreen(
     val statusBarState=when(homeScreenState.currentTheme){
         CurrentTheme.LIGHT_THEME->true
         CurrentTheme.DARK_THEME->false
-        else->!isSystemInDarkTheme()
+        else->!isDark
     }
 
     if (!view.isInEditMode){
@@ -173,7 +176,8 @@ fun HomeScreen(
         },
         floatingActionButton = {
             AnimatedVisibility(
-                visible = homeScreenState.currentTab==TabScreens.PLAYLISTS) {
+                visible = homeScreenState.currentTab==TabScreens.PLAYLISTS && lazyListState.isScrollingUp()
+            ) {
 
                 val customModifier=if (homeScreenState.isMiniPlayerVisible) Modifier.padding(bottom = 75.dp)
                     else Modifier
@@ -192,7 +196,8 @@ fun HomeScreen(
         Box(modifier = Modifier.padding(paddingValues)){
             Column(modifier = Modifier
                 .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally) {
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
                 TabRow(selectedTabIndex = pagerState.currentPage,
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -234,7 +239,8 @@ fun HomeScreen(
                         }
                         2->{
                             PlaylistsScreen(
-                                navigateToDetailsScreen = navigateToDetailsScreen
+                                navigateToDetailsScreen = navigateToDetailsScreen,
+                                lazyListState = lazyListState
                             )
                         }
                     }
@@ -244,6 +250,7 @@ fun HomeScreen(
                     onNavigateToPlayer = onNavigateToPlayer
                 )
             }
+
             if (showDialog){
                 AlertCreatePlaylist(
                     dismissAlert = { showDialog=false },
@@ -335,7 +342,7 @@ fun AlertCreatePlaylist(
 
     Dialog(onDismissRequest = { dismissAlert() }) {
         Card(
-            modifier =modifier
+            modifier = modifier
                 .fillMaxWidth()
                 .height(250.dp)
                 .padding(20.dp),
@@ -349,7 +356,7 @@ fun AlertCreatePlaylist(
                     text = "New Playlist",
                     fontSize = 22.sp,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier =Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .padding(10.dp),
                     textAlign = TextAlign.Start
@@ -358,7 +365,7 @@ fun AlertCreatePlaylist(
                 TextField(
                     value = text,
                     onValueChange ={text=it},
-                    modifier =Modifier
+                    modifier = Modifier
                         .padding(12.dp)
                         .focusRequester(focusRequester)
                         .onGloballyPositioned { focusRequester.requestFocus() },
@@ -456,7 +463,7 @@ fun ThemeSelectionDialog(
     }
 
     Dialog(onDismissRequest = { onDismissRequest() }){
-        Card(modifier =modifier
+        Card(modifier = modifier
             .fillMaxWidth()
             .height(290.dp)
             .padding(30.dp),
@@ -471,13 +478,13 @@ fun ThemeSelectionDialog(
             )
 
             themeListMap.forEach {
-                Row(modifier =Modifier
+                Row(modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
                         onThemeClick(it.key)
                         onDismissRequest()
                     }
-                    .padding(horizontal=5.dp),
+                    .padding(horizontal = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ){
                     RadioButton(selected = it.key==currentTheme, onClick = {

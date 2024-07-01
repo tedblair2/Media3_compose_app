@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -52,6 +53,7 @@ import com.github.tedblair2.muziki3.helpers.songCountString
 @Composable
 fun PlaylistsScreen(
     modifier: Modifier = Modifier,
+    lazyListState: LazyListState,
     navigateToDetailsScreen:(screenType:DetailScreenType,albumName:String,playlistId:Int)->Unit
 ) {
     val viewModel= hiltViewModel<PlaylistViewModel>()
@@ -61,7 +63,8 @@ fun PlaylistsScreen(
         modifier = modifier,
         playlistScreenState = playlistScreenState,
         navigateToDetails = navigateToDetailsScreen,
-        onEvent = viewModel::onEvent
+        onEvent = viewModel::onEvent,
+        lazyListState = lazyListState
     )
 }
 
@@ -69,12 +72,14 @@ fun PlaylistsScreen(
 fun PlaylistsScreenContent(
     modifier: Modifier = Modifier,
     playlistScreenState: PlaylistScreenState,
+    lazyListState: LazyListState,
     onEvent:(PlaylistScreenEvents)->Unit,
     navigateToDetails:(screenType:DetailScreenType,albumName:String,playlistId:Int)->Unit
 ) {
 
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        state = lazyListState
     ) {
         item {
             val painter= painterResource(id = R.drawable.recents5)
