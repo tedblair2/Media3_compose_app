@@ -18,7 +18,7 @@ fun NavGraphBuilder.playerScreen(
     onNavigateUp:()->Unit
 ){
     composable<Player>(
-        deepLinks = listOf(navDeepLink { uriPattern="myapp://player_screen" })
+        deepLinks = listOf(navDeepLink { uriPattern="myapp://player" })
     ){
         val viewModel=hiltViewModel<PlayerScreenViewModel>()
         val playerScreenState by viewModel.playerScreenState.collectAsStateWithLifecycle()

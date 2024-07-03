@@ -3,6 +3,7 @@ package com.github.tedblair2.muziki3
 import android.Manifest
 import android.app.AlertDialog
 import android.content.ComponentName
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
@@ -13,13 +14,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.annotation.OptIn
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.util.Consumer
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
@@ -29,6 +35,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.navigation.compose.rememberNavController
 import com.github.tedblair2.muziki3.core.local.AppCoroutineContext
 import com.github.tedblair2.muziki3.core.local.MusicService
 import com.github.tedblair2.muziki3.core.local.RoomRepository
@@ -85,10 +92,15 @@ class MainActivity : ComponentActivity() {
 
     private var controller:MediaController?=null
 
+    private val mainAppViewModel by viewModels<MainAppViewModel>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val rootNavController= rememberNavController()
+//            val =hiltViewModel<MainAppViewModel>()
+            val event by mainAppViewModel.event.collectAsState()
             val currentTheme by dataPrefService.getCurrentTheme().collectAsStateWithLifecycle(
                 initialValue= CurrentTheme.SYSTEM_THEME
             )
@@ -99,11 +111,35 @@ class MainActivity : ComponentActivity() {
                 CurrentTheme.DARK_THEME->true
             }
 
+            DisposableEffect(key1 = Unit) {
+                val listener= Consumer<Intent>{
+                    it.data?.let {uri->
+                        mainAppViewModel.handleDeeplink(uri)
+                    }
+                }
+
+                addOnNewIntentListener(listener)
+
+                onDispose { removeOnNewIntentListener(listener) }
+            }
+            
+            LaunchedEffect(key1 =event) {
+                when(val currentEvent=event){
+                    is Event.NavigateWithDeeplink->{
+                        rootNavController.navigate(currentEvent.deeplink)
+                    }
+                    else->{}
+                }
+                mainAppViewModel.consumeEvent()
+            }
+
             Muziki3Theme(
                 darkTheme = darkTheme
             ) {
                 MainApp(
-                    modifier = Modifier.fillMaxSize())
+                    modifier = Modifier.fillMaxSize(),
+                    rootNavController = rootNavController
+                )
             }
         }
 
@@ -231,6 +267,10 @@ class MainActivity : ComponentActivity() {
     @OptIn(UnstableApi::class)
     override fun onStart() {
         super.onStart()
+        intent?.data?.let {
+            mainAppViewModel.handleDeeplink(it)
+        }
+        intent=null
         val sessionToken=SessionToken(this, ComponentName(this, MediaPlayerService::class.java))
         controllerFuture=MediaController.Builder(this,sessionToken).buildAsync()
         controllerFuture.addListener({addPlayerListener()},ContextCompat.getMainExecutor(this))
@@ -263,15 +303,15 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        val songName=(player.currentMediaItem?.mediaMetadata?.title ?: "Current Song").toString()
-        if (songName != "Current Song"){
+        val songName=(player.currentMediaItem?.mediaMetadata?.title ?: "").toString()
+        if (songName.isNotEmpty()){
             dispatch?.invoke(PlayerEvents.MiniPlayerVisibility(true))
         }else{
             dispatch?.invoke(PlayerEvents.MiniPlayerVisibility(false))
         }
         dispatch?.invoke(PlayerEvents.SetSongName(songName))
         dispatch?.invoke(PlayerEvents.SetIsPlaying(player.isPlaying))
-        dispatch?.invoke(PlayerEvents.SetSongArtist((player.currentMediaItem?.mediaMetadata?.artist ?: "Artist").toString()))
+        dispatch?.invoke(PlayerEvents.SetSongArtist((player.currentMediaItem?.mediaMetadata?.artist ?: "").toString()))
         dispatch?.invoke(PlayerEvents.SetSongImage(player.currentMediaItem?.mediaMetadata?.artworkData))
         dispatch?.invoke(PlayerEvents.SetShuffle(player.shuffleModeEnabled))
         if (player.duration>0){
@@ -307,7 +347,7 @@ class MainActivity : ComponentActivity() {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 super.onPlaybackStateChanged(playbackState)
                 if (playbackState==ExoPlayer.STATE_READY){
-                    dispatch?.invoke(PlayerEvents.SetSongName((player.currentMediaItem?.mediaMetadata?.title ?: "Song Name").toString()))
+                    dispatch?.invoke(PlayerEvents.SetSongName((player.currentMediaItem?.mediaMetadata?.title ?: "").toString()))
                     dispatch?.invoke(PlayerEvents.SetSongArtist((player.currentMediaItem?.mediaMetadata?.artist ?: "").toString()))
                     dispatch?.invoke(PlayerEvents.SetSongImage(player.currentMediaItem?.mediaMetadata?.artworkData))
                     if (player.duration>0){

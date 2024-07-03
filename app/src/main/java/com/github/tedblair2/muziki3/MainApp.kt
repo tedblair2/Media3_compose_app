@@ -2,8 +2,8 @@ package com.github.tedblair2.muziki3
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import com.github.tedblair2.muziki3.features.createplaylist.ui.createPlaylistScreen
 import com.github.tedblair2.muziki3.features.createplaylist.ui.navigateToCreatePlaylist
 import com.github.tedblair2.muziki3.features.details.ui.detailsScreen
@@ -17,10 +17,9 @@ import com.github.tedblair2.muziki3.features.search.ui.searchScreen
 
 @Composable
 fun MainApp(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    rootNavController: NavHostController
 ) {
-
-    val rootNavController=rememberNavController()
 
     NavHost(
         navController = rootNavController ,

@@ -1,8 +1,6 @@
 package com.github.tedblair2.muziki3.data.service
 
 import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_IMMUTABLE
-import android.app.TaskStackBuilder
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -27,7 +25,6 @@ import androidx.media3.session.MediaSessionService
 import androidx.media3.session.MediaStyleNotificationHelper
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
-import com.github.tedblair2.muziki3.MainActivity
 import com.github.tedblair2.muziki3.R
 import com.github.tedblair2.muziki3.core.local.AppCoroutineContext
 import com.github.tedblair2.muziki3.core.local.RoomRepository
@@ -306,12 +303,18 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
     }
 
     private fun notificationIntent(): PendingIntent {
-        val intent=Intent(Intent.ACTION_VIEW,"myapp://player_screen".toUri(),
-            this, MainActivity::class.java)
-        return TaskStackBuilder.create(this).run {
-            addNextIntentWithParentStack(intent)
-            getPendingIntent(0,FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val routeIntent=Intent(Intent.ACTION_VIEW,"myapp://player".toUri()).apply {
+            flags=Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
+        val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+
+        val pending = PendingIntent.getActivity(
+            baseContext,
+            0,
+            routeIntent,
+            flags
+        )
+        return pending
     }
 
     private fun stopPlayer(){
