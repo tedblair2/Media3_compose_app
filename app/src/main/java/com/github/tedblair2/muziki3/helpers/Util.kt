@@ -6,4 +6,5 @@ object Util {
     const val NOTIFICATION_ID=25
     const val STOP_ACTION="stop_action"
     const val FAV_ACTION="fav_action"
+    const val PLAYER_URI="myapp://player"
 }

@@ -9,6 +9,7 @@ import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navDeepLink
 import com.github.tedblair2.muziki3.features.player.viewmodel.PlayerScreenViewModel
+import com.github.tedblair2.muziki3.helpers.Util
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -18,7 +19,7 @@ fun NavGraphBuilder.playerScreen(
     onNavigateUp:()->Unit
 ){
     composable<Player>(
-        deepLinks = listOf(navDeepLink { uriPattern="myapp://player" })
+        deepLinks = listOf(navDeepLink { uriPattern=Util.PLAYER_URI })
     ){
         val viewModel=hiltViewModel<PlayerScreenViewModel>()
         val playerScreenState by viewModel.playerScreenState.collectAsStateWithLifecycle()

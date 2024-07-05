@@ -99,8 +99,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val rootNavController= rememberNavController()
-//            val =hiltViewModel<MainAppViewModel>()
-            val event by mainAppViewModel.event.collectAsState()
+
+            val mainAppState by mainAppViewModel.mainAppState.collectAsState()
+
             val currentTheme by dataPrefService.getCurrentTheme().collectAsStateWithLifecycle(
                 initialValue= CurrentTheme.SYSTEM_THEME
             )
@@ -114,7 +115,7 @@ class MainActivity : ComponentActivity() {
             DisposableEffect(key1 = Unit) {
                 val listener= Consumer<Intent>{
                     it.data?.let {uri->
-                        mainAppViewModel.handleDeeplink(uri)
+                        mainAppViewModel.onEvent(MainEvent.NavigateWithDeeplink(uri))
                     }
                 }
 
@@ -122,15 +123,12 @@ class MainActivity : ComponentActivity() {
 
                 onDispose { removeOnNewIntentListener(listener) }
             }
-            
-            LaunchedEffect(key1 =event) {
-                when(val currentEvent=event){
-                    is Event.NavigateWithDeeplink->{
-                        rootNavController.navigate(currentEvent.deeplink)
-                    }
-                    else->{}
+
+            LaunchedEffect(key1 = mainAppState.uri) {
+                mainAppState.uri?.let {
+                    rootNavController.navigate(it)
                 }
-                mainAppViewModel.consumeEvent()
+                mainAppViewModel.onEvent(MainEvent.ConsumeEvent)
             }
 
             Muziki3Theme(
@@ -268,7 +266,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         intent?.data?.let {
-            mainAppViewModel.handleDeeplink(it)
+            mainAppViewModel.onEvent(MainEvent.NavigateWithDeeplink(it))
         }
         intent=null
         val sessionToken=SessionToken(this, ComponentName(this, MediaPlayerService::class.java))

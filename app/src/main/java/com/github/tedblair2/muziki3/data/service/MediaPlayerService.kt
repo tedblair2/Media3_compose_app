@@ -303,7 +303,7 @@ class MediaPlayerService:MediaSessionService(),MediaSession.Callback {
     }
 
     private fun notificationIntent(): PendingIntent {
-        val routeIntent=Intent(Intent.ACTION_VIEW,"myapp://player".toUri()).apply {
+        val routeIntent=Intent(Intent.ACTION_VIEW,Util.PLAYER_URI.toUri()).apply {
             flags=Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         val flags = PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
