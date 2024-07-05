@@ -11,8 +11,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainAppViewModel @Inject constructor():ViewModel() {
 
-    val event = MutableStateFlow<MainEvent>(MainEvent.ConsumeEvent)
-
     private val _mainAppState=MutableStateFlow(MainAppScreenState())
     val mainAppState=_mainAppState.asStateFlow()
 
@@ -29,14 +27,6 @@ class MainAppViewModel @Inject constructor():ViewModel() {
                 }
             }
         }
-    }
-
-    fun handleDeeplink(uri: Uri) {
-        event.update { MainEvent.NavigateWithDeeplink(uri) }
-    }
-
-    fun consumeEvent() {
-        event.update { MainEvent.ConsumeEvent }
     }
 }
 
