@@ -3,9 +3,8 @@ This is a simple Android application that plays audio files in user devices usin
 The modern UI toolkit, Jetpack Compose, is used to create the various elements that allow a user to interact with the application.
 The app uses Media 3 MediaSessionService for background playback. It follows recommended coding practices i.e. MVVM for development. 
 
-![Screenshot_20231031_112557_Muziki](https://github.com/tedblair2/Media3_compose_app/assets/39332527/e0498d60-4665-4229-bbe8-3403761fefa6)
-![Screenshot_20231031_112543_Muziki](https://github.com/tedblair2/Media3_compose_app/assets/39332527/f3566580-2496-4828-9fce-5b15379a7c33)
-![Screenshot_20231031_112611_Muziki](https://github.com/tedblair2/Media3_compose_app/assets/39332527/8b7d2b89-d2ff-4e64-9336-283cb16be7b7)
+![Screenshot_20240715_151707_Muziki](https://github.com/user-attachments/assets/09149934-d6c9-411b-bbb1-9c04b22f44f3)    ![Screenshot_20240715_151726_Muziki](https://github.com/user-attachments/assets/9e15582d-947e-40b9-a462-5d3037bc108f)    ![Screenshot_20240715_151653_Muziki (1)](https://github.com/user-attachments/assets/f2f891b6-3091-43f8-8b4a-c372cd954484)
+
 
 
 
